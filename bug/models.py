@@ -1,17 +1,27 @@
-# bug/models.py
+# models.py for bug app
+
 from django.db import models
-from accounts.models import CustomUser
 from django.contrib.auth import get_user_model
-from project.models import Project 
 from department.models import Department
+from project.models import Project, ProjectUser
 
 User = get_user_model()
 
 class Bug(models.Model):
-    PRIORITY_CHOICES = [
-        ('low', 'Low'),
-        ('medium', 'Medium'),
-        ('high', 'High'),
+    BUG_TYPE_CHOICES = [
+        ('error', 'Error'),
+        ('mistake', 'Mistake'),
+        ('bug', 'Bug'),
+        ('issue', 'Issue'),
+        ('fault', 'Fault'),
+        ('defect', 'Defect'),
+        ('other', 'Other')
+    ]
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('in_progress', 'In Progress')
     ]
 
     SEVERITY_CHOICES = [
@@ -20,40 +30,30 @@ class Bug(models.Model):
         ('normal', 'Normal'),
         ('minor', 'Minor'),
         ('trivial', 'Trivial'),
-        ('enhancement', 'Enhancements/Feature Requests'),
+        ('enhancements', 'Enhancements/Feature Requests')
     ]
 
-    TYPE_CHOICES = [
-        ('error', 'Error'),
-        ('mistake', 'Mistake'),
-        ('bug', 'Bug'),
-        ('issue', 'Issue'),
-        ('fault', 'Fault'),
-        ('defect', 'Defect'),
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High')
     ]
 
-    STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('closed', 'Closed'),
-        ('in_progress', 'In Progress'),
-    ]
-
-    bug_name = models.CharField(max_length=255)
-    project = models.ForeignKey(Project, related_name='created_bugs', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='uploads/', verbose_name='Bug_Image')
-    department = models.ForeignKey(Department, related_name='created_bugs', on_delete=models.CASCADE)
-    bug_date = models.DateField()
+    bug_id = models.AutoField(primary_key=True)
+    bug_type = models.CharField(max_length=20, choices=BUG_TYPE_CHOICES)
+    created_by = models.ForeignKey(User, related_name='created_bugs', on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey(User, related_name='assigned_bugs', on_delete=models.SET_NULL, null=True, blank=True)
+    report_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    bug_description = models.TextField()
+    url_bug = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to='bugs/', blank=True, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     bug_priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
-    bug_severity = models.CharField(max_length=15, choices=SEVERITY_CHOICES)
-    bug_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
-    created_by = models.ForeignKey(CustomUser, related_name='created_bugs', on_delete=models.CASCADE)
-    description = models.TextField()
-    updated_time = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES)
+    bug_severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     is_current_project = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.bug_name
-    
-    def delete(self, *args, **kwargs):
-        raise NotImplementedError("Deleting bugs is not allowed. Set the status to 'closed' instead.")
+        return f"{self.bug_id} - {self.bug_type} -{self.status}"

@@ -1,42 +1,32 @@
-# department/models.py
 from django.db import models
-from django.conf import settings
-from accounts.models import CustomUser
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Department(models.Model):
-    CUSTOMER = 'Customer'
-    DEVOPS = 'DevOps'
-    JAVA = 'Java' 
-    MANAGEMENT = 'Management'
-    PHP = 'PHP'
-    PYTHON = 'Python'
-
-    DEPARTMENT_CHOICES = [
-        (CUSTOMER, 'Customer'),
-        (DEVOPS, 'DevOps'),
-        (JAVA, 'Java'),       
-        (MANAGEMENT, 'Management'),
-        (PHP, 'PHP'),
-        (PYTHON, 'Python')
+    DEPT_CHOICES = [
+        ('python', 'Python'),
+        ('php', 'PHP'),
+        ('java', 'Java'),
+        ('angular', 'Angular'),
+        ('mobile_app', 'Mobile App'),
+        ('devops', 'DevOps'),
+        ('tester', 'Tester'),
+        ('management', 'Management'),
+        ('client', 'Client')
     ]
 
-    PROJECT_LEAD = 'Project Lead'
-    DEVELOPER = 'Developer'
-    TESTER = 'Tester'
-    MANAGER = 'Manager'
-    CLIENT = 'Client'
-    
     ROLE_CHOICES = [
-        (PROJECT_LEAD, 'Project Lead'),
-        (DEVELOPER, 'Developer'),
-        (TESTER, 'Tester'),
-        (MANAGER, 'Manager'),
-        (CLIENT, 'Client')
+        ('team_lead', 'Team Lead'),
+        ('developer', 'Developer'),
+        ('customer', 'Customer'),
+        ('tester', 'Tester'),
+        ('manager', 'Manager')
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    department = models.CharField(max_length=50, choices=DEPARTMENT_CHOICES)
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    dept = models.CharField(max_length=20, choices=DEPT_CHOICES)
 
     def __str__(self):
-        return f"{self.user.username} - {self.department} - {self.role}"
+        return f"{self.user.username} - {self.role} - {self.dept}"

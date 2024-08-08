@@ -1,19 +1,32 @@
-# project/models.py
 from django.db import models
+from django.contrib.auth import get_user_model
 from department.models import Department
-from accounts.models import CustomUser
+
+User = get_user_model()
 
 class Project(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('in_progress', 'In Progress')
+    ]
+
     project_name = models.CharField(max_length=255)
-    project_description = models.TextField()
-    project_duration = models.IntegerField(help_text="Duration in days")
+    project_duration = models.IntegerField()  # Duration in days
     client_name = models.CharField(max_length=255)
-    department = models.ForeignKey(Department, related_name='projects', on_delete=models.CASCADE)
     submission_date = models.DateField()
-    updated_date = models.DateField(auto_now=True)    
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='projects')  # Added field
+    updated_date = models.DateField(auto_now=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    users = models.ManyToManyField(User, through='ProjectUser')
+    
+    def __str__(self):
+        return self.project_name
 
-
+class ProjectUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20)
+    dept = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.project_name} - {self.department.department} - {self.user.username} - {self.department.role}"
+        return f"{self.user.username} - {self.project.project_name} - {self.role}"

@@ -1,16 +1,13 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework import generics, permissions
 from .models import Department
 from .serializers import DepartmentSerializer
-from rest_framework.exceptions import PermissionDenied
 
 class DepartmentListCreateView(generics.ListCreateAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]
 
 class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
+    permission_classes = [permissions.IsAdminUser]
