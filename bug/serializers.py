@@ -16,8 +16,13 @@ class BugSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        project_id = self.initial_data.get('project')
+        if hasattr(self, 'initial_data'):
+            project_id = self.initial_data.get('project_id')
+
+    """def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        project_id = self.initial_data.get('project_id')
         if project_id:
             self.fields['assigned_to'].queryset = get_user_model().objects.filter(
                 id__in=ProjectUser.objects.filter(project_id=project_id).values_list('user_id', flat=True)
-            )
+            )"""
