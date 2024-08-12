@@ -2,12 +2,10 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-
-from .permissions import IsAdminOrManagerOrTeamLead
-from .serializers import RegisterSerializer, LoginSerializer
-
+from .permissions import IsAdminOrManagerOrTeamLead, IsAdminOrManager, IsOwnProfile
+from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer, UserAdminSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -16,7 +14,6 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [IsAuthenticated, IsAdminOrManagerOrTeamLead]
     serializer_class = RegisterSerializer
-
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
@@ -49,3 +46,20 @@ class LogoutView(generics.GenericAPIView):
         
         except TokenError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserListView(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAdminOrManager]
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAdminOrManager]
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsOwnProfile]
+
+    def get_object(self):
+        return self.request.user

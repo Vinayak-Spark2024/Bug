@@ -10,7 +10,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'password', 'role', 'dept']
         extra_kwargs = {'password': {'write_only': True}}
 
-
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -37,7 +36,6 @@ class LoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError('Invalid login credentials')
 
-        # Generate tokens
         refresh = RefreshToken.for_user(user)
         data = {
             'user_id': user.id,
@@ -47,3 +45,35 @@ class LoginSerializer(serializers.Serializer):
             'refresh': str(refresh)
         }
         return data
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'role', 'dept', 'is_staff']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'role', 'dept', 'is_staff']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+    
+
