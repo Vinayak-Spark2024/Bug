@@ -2,8 +2,7 @@
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from department.models import Department
-from project.models import Project, ProjectUser
+from project.models import Project
 
 User = get_user_model()
 
@@ -49,7 +48,6 @@ class Bug(models.Model):
     url_bug = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to='bugs/', blank=True, null=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     bug_priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
     bug_severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)

@@ -1,8 +1,8 @@
-from rest_framework import generics, permissions
 from rest_framework.response import Response
-from .models import Project, ProjectUser
-from .serializers import ProjectSerializer, ProjectUserSerializer
+from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
+from .models import Project
+from .serializers import ProjectSerializer
 
 class ProjectListCreateView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
@@ -21,11 +21,6 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ['PUT', 'DELETE']:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
-
-class ProjectUserCreateView(generics.CreateAPIView):
-    queryset = ProjectUser.objects.all()
-    serializer_class = ProjectUserSerializer
-    permission_classes = [permissions.IsAdminUser]
 
 class UpdateProjectStatusView(generics.UpdateAPIView):
     queryset = Project.objects.all()

@@ -2,7 +2,6 @@
 
 from rest_framework import serializers
 from .models import Bug
-from project.models import ProjectUser
 from django.contrib.auth import get_user_model
 
 

@@ -1,13 +1,9 @@
 from rest_framework import serializers
-from .models import Project, ProjectUser
-
-class ProjectUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectUser
-        fields = '__all__'
+from .models import Project
+from accounts.models import CustomUser
 
 class ProjectSerializer(serializers.ModelSerializer):
-    projectuser_set = ProjectUserSerializer(many=True, read_only=True)
+    users = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), many=True)
 
     class Meta:
         model = Project
