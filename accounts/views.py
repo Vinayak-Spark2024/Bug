@@ -4,15 +4,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from .permissions import IsAdminOrManagerOrTeamLead, IsAdminOrManager, IsOwnProfile
-from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer, UserAdminSerializer
+from .permissions import IsAdminOrManagerOrTeamLead
+from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer, AdminUserProfileSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAuthenticated, IsAdminOrManagerOrTeamLead]
+    permission_classes = [IsAdminOrManagerOrTeamLead]
     serializer_class = RegisterSerializer
 
 class LoginView(generics.GenericAPIView):
@@ -47,19 +47,27 @@ class LogoutView(generics.GenericAPIView):
         except TokenError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class UserListView(generics.ListCreateAPIView):
+class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
-    serializer_class = UserAdminSerializer
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [IsAuthenticated]
 
-class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserAdminSerializer
-    permission_classes = [IsAdminOrManager]
+    def get_serializer_class(self):
+        if self.request.user.is_staff or self.request.user.role in ['manager', 'team_lead']:
+            return AdminUserProfileSerializer
+        return UserProfileSerializer
 
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsOwnProfile]
+    def get_queryset(self):
+        if self.request.user.is_staff or self.request.user.role in ['manager', 'team_lead']:
+            return User.objects.all()
+        return User.objects.filter(id=self.request.user.id)
 
     def get_object(self):
-        return self.request.user
+        obj = super().get_object()
+        # Ensure that regular users can only access their own profile
+        if not (self.request.user.is_staff or self.request.user.role in ['manager', 'team_lead']) and obj.id != self.request.user.id:
+            self.permission_denied(self.request, message="You do not have permission to access this profile.")
+        return obj
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = AdminUserProfileSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrManagerOrTeamLead]
